@@ -133,3 +133,63 @@ func Settings(content Setting, session sessions.Session) map[string]string {
 	}
 
 }
+
+func AddProfile(session sessions.Session) (map[string]string, map[string]any) {
+	if session.Get("userID") != nil {
+		connector, err := database.Connection()
+		if err != nil {
+			return APIAnswer("91"), nil
+		}
+		userLogin := session.Get("userName")
+		var addUser Users
+		connector.First(&addUser, fmt.Sprintf("logins = '%s'", userLogin))
+		var profil = map[string]any{
+			"logins":            addUser.Logins,
+			"phone_number":      addUser.Phone_number,
+			"locale":            addUser.Locale,
+			"activated":         addUser.Activated,
+			"registration_date": addUser.Registration_date,
+			"blocking_date":     addUser.Blocking_date,
+		}
+		return nil, APIAnswerData("0", profil)
+
+	} else {
+		return APIAnswer("20"), nil
+	}
+
+}
+
+func UpdateProfile(session sessions.Session, profile Profiles) map[string]string {
+	if session.Get("userID") != nil {
+		connector, err := database.Connection()
+		if err != nil {
+			return APIAnswer("91")
+		}
+		userLogin := session.Get("userName")
+		var addUser Users
+		connector.First(&addUser, fmt.Sprintf("logins = '%s'", profile.Logins)).First(&addUser)
+		if addUser.Id > 0 {
+			return APIAnswer("13")
+		}
+		fmt.Println(userLogin)
+		if len(profile.Phone_number) != 0 || len(profile.Logins) != 0 {
+			connector.Model(addUser).Where(fmt.Sprintf("logins = '%s'", userLogin)).Update("logins", profile.Logins)
+			connector.Model(addUser).Where(fmt.Sprintf("logins = '%s'", userLogin)).Update("phone_number", profile.Phone_number)
+			session.Set("userName", profile.Logins)
+			session.Set("userPhoneNumber", profile.Phone_number)
+			session.Save()
+
+		} else if len(profile.Phone_number) != 0 {
+			connector.Model(addUser).Where(fmt.Sprintf("logins = '%s'", userLogin)).Update("phone_number", profile.Phone_number)
+			session.Set("userName", profile.Logins)
+			session.Save()
+
+		} else if len(profile.Logins) != 0 {
+			connector.Model(addUser).Where(fmt.Sprintf("logins = '%s'", userLogin)).Update("logins", profile.Logins)
+			session.Set("userPhoneNumber", profile.Phone_number)
+			session.Save()
+		}
+
+	}
+	return APIAnswer("0")
+}

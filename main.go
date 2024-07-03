@@ -76,5 +76,30 @@ func main() {
 		c.JSON(200, answer)
 	})
 
+	router.GET("/profile", func(c *gin.Context) {
+		sessions := sessions.Default(c)
+		answer, answerData := AddProfile(sessions)
+		if answer != nil {
+			c.JSON(200, answer)
+		} else if answerData != nil {
+			c.JSON(200, answerData)
+
+		}
+
+	})
+
+	router.POST("/profile", func(c *gin.Context) {
+		session := sessions.Default(c)
+		var profile Profiles
+		if err := c.ShouldBindJSON(&profile); err != nil {
+			c.Error(err)
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		answer := UpdateProfile(session, profile)
+		c.JSON(200, answer)
+
+	})
+
 	router.Run("0.0.0.0:8080")
 }

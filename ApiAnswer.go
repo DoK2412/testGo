@@ -24,8 +24,8 @@ func APIAnswer(code string) map[string]string {
 	return dictAnswer
 }
 
-func APIAnswerData(code string, data string) map[string]string {
-	var dictAnswer = map[string]string{
+func APIAnswerData(code string, data map[string]any) map[string]any {
+	var dictAnswer = map[string]any{
 		"code":        code,
 		"description": answers[code],
 		"data":        data,

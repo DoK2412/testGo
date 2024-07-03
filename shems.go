@@ -41,3 +41,8 @@ type Authorization struct {
 type Setting struct {
 	Locale string `json:"locale"`
 }
+
+type Profiles struct {
+	Logins       string `json:"logins"`
+	Phone_number string `json:"phone_number"`
+}
